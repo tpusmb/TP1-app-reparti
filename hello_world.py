@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-import os
-import timeit
-from mpi4py import MPI
+
 import logging.handlers
+import os
+
+from mpi4py import MPI
 
 PYTHON_LOGGER = logging.getLogger(__name__)
 if not os.path.exists("log"):
@@ -26,5 +27,4 @@ FOLDER_ABSOLUTE_PATH = os.path.normpath(os.path.dirname(os.path.abspath(__file__
 comm = MPI.COMM_WORLD
 me = comm.Get_rank()
 size = comm.Get_size()
-print("Hi from <"+str(me)+">")
-
+print("Hi from <" + str(me) + ">")

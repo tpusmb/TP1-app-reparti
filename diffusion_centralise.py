@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-import os
-import timeit
+
 import logging.handlers
+import os
+
 from mpi4py import MPI
 
 PYTHON_LOGGER = logging.getLogger(__name__)
@@ -26,12 +27,12 @@ FOLDER_ABSOLUTE_PATH = os.path.normpath(os.path.dirname(os.path.abspath(__file__
 comm = MPI.COMM_WORLD
 me = comm.Get_rank()
 size = comm.Get_size()
-print("Hi from <"+str(me)+">")
+print("Hi from <" + str(me) + ">")
 if me == 0:
     buf = ["coucou"]
-    print("I'm <"+str(me)+">: send " + buf[0])
+    print("I'm <" + str(me) + ">: send " + buf[0])
     for i in range(1, size):
-	comm.send(buf, dest=i, tag=99)
+        comm.send(buf, dest=i, tag=99)
 else:
     buf = comm.recv(source=0, tag=99)
-    print("I'm <"+str(me)+">: receive " + buf[0])
+    print("I'm <" + str(me) + ">: receive " + buf[0])
