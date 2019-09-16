@@ -1,12 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
+"""
+Fichier pour la diffusion centralisee.
 
+Usage:
+    diffusion_centralize.py <id>
+
+Options:
+    -h --help           Show this screen.
+    <id>                id de celui qui envoie.
+"""
+
+from __future__ import absolute_import
 import logging.handlers
 import os
-
 from mpi4py import MPI
+from docopt import docopt
 
 PYTHON_LOGGER = logging.getLogger(__name__)
 if not os.path.exists("log"):
@@ -24,15 +34,23 @@ PYTHON_LOGGER.setLevel(logging.DEBUG)
 # Absolute path to the folder location of this python file
 FOLDER_ABSOLUTE_PATH = os.path.normpath(os.path.dirname(os.path.abspath(__file__)))
 
-comm = MPI.COMM_WORLD
-me = comm.Get_rank()
-size = comm.Get_size()
-print("Hi from <" + str(me) + ">")
-if me == 0:
-    buf = ["coucou"]
-    print("I'm <" + str(me) + ">: send " + buf[0])
-    for i in range(1, size):
-        comm.send(buf, dest=i, tag=99)
-else:
-    buf = comm.recv(source=0, tag=99)
-    print("I'm <" + str(me) + ">: receive " + buf[0])
+
+def diffusion_centralize(node_id):
+    comm = MPI.COMM_WORLD
+    me = comm.Get_rank()
+    size = comm.Get_size()
+    print("Hi from <" + str(me) + ">")
+    if me == node_id:
+        buf = ["coucou"]
+        print("I'm <" + str(me) + ">: send " + buf[0])
+        for i in range(0, size):
+            if i != node_id:
+                comm.send(buf, dest=i, tag=99)
+    else:
+        buf = comm.recv(source=node_id, tag=99)
+        print("I'm <" + str(me) + ">: receive " + buf[0])
+
+
+if __name__ == "__main__":
+    arguments = docopt(__doc__)
+    diffusion_centralize(int(arguments["<id>"]))
