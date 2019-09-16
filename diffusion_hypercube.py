@@ -33,43 +33,24 @@ MSG_TO_SEND = ["hello"]
 print("Hi from <" + str(me) + ">")
 
 
-def sender(msg, ids):
-    """
+def diffusion(frome, msg):
 
-    :param msg:
-    :param ids:
-    :return:
-    """
-    for id in ids:
-        comm.send(msg, dest=id, tag=99)
-
-
-def get_next_ids(id):
-    ids = []
-    for dim in [0, 1, 2]:
-        next_id = id * math.pow(2, dim)
-        if next_id < size:
-            ids.append(next_id)
-
-    return ids
-
-
-def diffusion_hypercube(id):
-    """
-
-    :param id:
-    :return:
-    """
-    if me == 0:
-        print("I'm <{}>: send {}".format(me, MSG_TO_SEND))
-        sender(MSG_TO_SEND, get_next_ids(me))
+    if me == frome:
+        for dim in range(size):
+            next_id = me + pow(2, dim)
+            if next_id > size:
+                break
+            next_id %= size
+            print("I'm <{}>: send to {}".format(me, next_id))
+            comm.send(msg + [dim], dest=next_id, tag=99)
     else:
         buf = comm.recv(source=sender_id, tag=99)
-        print("I'm <{}>: receive {}".format(me, buf[0]))
-        ids = get_next_ids(me)
-        if len(ids) == 0:
-            print("I'm <{}>: no more send".format(me, buf[0]))
-        else:
-            sender(MSG_TO_SEND, ids)
+        for dim in range(int(buf[-1]) + 1, size):
+            next_id = me + pow(2, dim)
+            if next_id > size:
+                break
+            next_id %= size
+            print("I'm <{}>: send to {}".format(me, next_id))
+            comm.send(msg + [dim], dest=next_id, tag=99)
 
-
+diffusion(0, MSG_TO_SEND)
