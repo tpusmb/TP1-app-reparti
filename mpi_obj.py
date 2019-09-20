@@ -2,18 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-
-import logging.handlers
 import os
-
 from mpi4py import MPI
-
-from mpi_obj import MPIObj
+import logging.handlers
 
 PYTHON_LOGGER = logging.getLogger(__name__)
 if not os.path.exists("log"):
     os.mkdir("log")
-HDLR = logging.handlers.TimedRotatingFileHandler("log/gather.log",
+HDLR = logging.handlers.TimedRotatingFileHandler("log/mpi_obj.log",
                                                  when="midnight", backupCount=60)
 STREAM_HDLR = logging.StreamHandler()
 FORMATTER = logging.Formatter("%(asctime)s %(filename)s [%(levelname)s] %(message)s")
@@ -27,23 +23,9 @@ PYTHON_LOGGER.setLevel(logging.DEBUG)
 FOLDER_ABSOLUTE_PATH = os.path.normpath(os.path.dirname(os.path.abspath(__file__)))
 
 
-def gather(to_id, tab, mpi_obj):
-    me = mpi_obj.me
-    size = mpi_obj.size
-    if me == to_id:
-        big_tab = tab
-        for i in range(size):
-            if i != me:
-                buf = mpi_obj.comm.recv(source=MPI.ANY_SOURCE, tag=99)
-                big_tab.extend(buf)
-        print("I'm <{}>: receive {}".format(me, big_tab))
-        return big_tab
-    else:
-        print("I'm <{}>: send {}".format(me, tab))
-        mpi_obj.comm.send(tab, dest=0, tag=99)
-        return []
-
-
-if __name__ == "__main__":
-    mpi_obj = MPIObj()
-    gather(0, [mpi_obj.me], mpi_obj)
+class MPIObj:
+    def __init__(self):
+        self.comm = MPI.COMM_WORLD
+        self.me = self.comm.Get_rank()
+        self.size = self.comm.Get_size()
+        self.nb_node = self.size - 1
