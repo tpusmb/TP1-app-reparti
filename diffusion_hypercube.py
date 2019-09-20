@@ -39,12 +39,14 @@ def diffusion(from_id, msg, mpi_obj):
         print("I'm {}: get {}".format(me, buf))
     for dim in range(start_dim, size):
         next_id = me + pow(2, dim)
-        if next_id - mpi_obj.nb_node > 0:
+        if next_id - mpi_obj.nb_node > from_id:
             break
         next_id %= size
+        if next_id == me or next_id == from_id:
+            break
         print("I'm <{}>: send to {}".format(me, next_id))
         mpi_obj.comm.send(msg + [dim], dest=next_id, tag=99)
 
 
 if __name__ == "__main__":
-    diffusion(0, MSG_TO_SEND, MPIObj())
+    diffusion(3, MSG_TO_SEND, MPIObj())
